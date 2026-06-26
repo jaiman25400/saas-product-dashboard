@@ -33,6 +33,9 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# local assessment materials (confidential — do not publish)
+2026 06 June fullstack_take_home_challenge.pdf
+
 # vercel
 .vercel
 
