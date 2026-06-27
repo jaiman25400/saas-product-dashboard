@@ -9,6 +9,7 @@
 
 ## Table of Contents
 
+0. [Phase 1 & 2 Revision Sheet](./PHASE_1_2_REVISION.md) — interview quick recap
 1. [Assessment Overview](#assessment-overview)
 2. [Core Requirements](#core-requirements)
 3. [Bonus Areas (TBD)](#bonus-areas-tbd)
@@ -288,7 +289,8 @@ saas-product-dashboard/
 ├── firestore.indexes.json
 ├── .env.example
 ├── .gitignore
-├── PROJECT_PLAN.md                   # this file
+├── PROJECT_PLAN.md                   # Living build plan + architecture
+├── PHASE_1_2_REVISION.md             # Interview revision sheet (Phase 1 & 2)
 ├── README.md                         # submission-facing doc (build later)
 └── .github/workflows/ci.yml          # bonus — if chosen
 ```
@@ -297,14 +299,15 @@ saas-product-dashboard/
 
 ## Phased Build Plan
 
-### Phase 0 — Foundation 🔄 In progress
+### Phase 0 — Foundation ✅ Complete (after you add `.env.local`)
 
 - [x] `git init`, connect remote, initial commit
 - [x] Scaffold Next.js (App Router, TypeScript, Tailwind, ESLint)
-- [ ] Create Firebase project (Auth + Firestore)
-- [ ] Add `.env.example` with required variables
-- [ ] Add `.gitignore` (node_modules, `.env.local`, etc.)
-- [ ] Firebase client + admin SDK wiring (no features yet)
+- [x] Create Firebase project (Auth + Firestore)
+- [x] Add `.env.example` with required variables
+- [x] Add `.gitignore` (node_modules, `.env.local`, allow `.env.example`)
+- [x] Firebase client + admin SDK wiring (`src/lib/firebase/`)
+- [ ] **You:** copy `.env.example` → `.env.local` and fill values locally
 
 **Env vars to document:**
 
@@ -320,30 +323,33 @@ FIREBASE_ADMIN_CLIENT_EMAIL=
 FIREBASE_ADMIN_PRIVATE_KEY=
 ```
 
-### Phase 1 — Database design ⬜ Not started
+### Phase 1 — Database design ✅ Complete
 
-- [ ] Finalize schema in this doc + README
-- [ ] Write `firestore.rules` (baseline deny-all + scoped allow)
-- [ ] Write `firestore.indexes.json`
-- [ ] Define TypeScript types (`Product`, `User`, `Role`)
+- [x] Finalize schema in this doc + README
+- [x] Write `firestore.rules` (baseline deny-all + scoped allow)
+- [x] Write `firestore.indexes.json`
+- [x] Define TypeScript types (`Product`, `User`, `Role`)
+- [ ] **You:** deploy rules to Firebase Console (see below)
 
-### Phase 2 — Authentication ⬜ Not started
+### Phase 2 — Authentication ✅ Complete
 
-- [ ] Sign-up page (email/password)
-- [ ] Sign-in page (email/password)
-- [ ] Auth context or session hook for client
-- [ ] Middleware: protect `/dashboard`, `/products`
-- [ ] Custom claims: assign `admin` / `viewer`
-- [ ] Bootstrap script for first admin user
+- [x] Sign-up page (email/password)
+- [x] Sign-in page (email/password)
+- [x] Auth context (`AuthProvider` + `useAuth`)
+- [x] Middleware — protect `/dashboard`
+- [x] Session cookie via `/api/auth/session`
+- [x] Custom claims — first user `admin`, later users `viewer` via `/api/auth/register`
+- [x] Dashboard shell (placeholder until Phase 4)
 
-### Phase 3 — Data layer + API ⬜ Not started
+### Phase 3 — Data layer + API ✅ Complete
 
-- [ ] `ProductRepository` — CRUD + list with filters
-- [ ] `ProductService` — validation + authorization
-- [ ] `GET/POST /api/products`
-- [ ] `GET/PATCH/DELETE /api/products/[id]`
-- [ ] Zod schemas for request bodies
-- [ ] Server-side role check on all mutations
+- [x] `ProductRepository` — CRUD + list with filters
+- [x] `ProductService` — validation + authorization
+- [x] `GET/POST /api/products`
+- [x] `GET/PATCH/DELETE /api/products/[id]`
+- [x] `GET /api/products/summary` — metrics for dashboard
+- [x] Zod schemas for request bodies
+- [x] Server-side role check on all mutations (`requireAdmin`)
 
 ### Phase 4 — Dashboard UI ⬜ Not started
 
@@ -417,10 +423,10 @@ Be ready to explain:
 
 | Phase | Status | Completed |
 |-------|--------|-----------|
-| Phase 0 — Foundation | 🔄 In progress | Next.js scaffolded, git initialized |
-| Phase 1 — Database design | ⬜ Not started | — |
-| Phase 2 — Authentication | ⬜ Not started | — |
-| Phase 3 — Data layer + API | ⬜ Not started | — |
+| Phase 0 — Foundation | ✅ Complete | Firebase SDK wired; add `.env.local` locally |
+| Phase 1 — Database design | ✅ Complete | Deploy `firestore.rules` in Firebase Console |
+| Phase 2 — Authentication | ✅ Complete | Test sign-up → first user is admin |
+| Phase 3 — Data layer + API | ✅ Complete | Study + Phase 4 UI next |
 | Phase 4 — Dashboard UI | ⬜ Not started | — |
 | Phase 5 — Polish & bonus | ⬜ Not started | — |
 | Phase 6 — Interview prep | ⬜ Not started | — |
@@ -450,6 +456,45 @@ Be ready to explain:
 - Committed `PROJECT_PLAN.md`; assessment PDF kept local only (in `.gitignore`)
 
 **Next step:** Create Firebase project, then Phase 0 items 3–5 (env vars, Firebase SDK wiring).
+
+### Session 3 — Phase 0 Firebase wiring (June 25, 2026)
+
+**What we did:**
+- User created Firebase project (email/password auth, Firestore test mode, web app, service account)
+- Added `.env.example`, fixed `.gitignore` to allow it
+- Installed `firebase` + `firebase-admin`
+- Added `src/lib/firebase/client.ts` (browser) and `admin.ts` (server-only)
+- Added `GET /api/health/firebase` to verify Admin SDK connection
+
+**Next step:** User copies `.env.example` → `.env.local`, then Phase 1 (schema + Firestore rules).
+
+### Session 4 — Phase 1 database design (June 25, 2026)
+
+**What we did:**
+- Added `src/types/` — `role.ts`, `user.ts`, `product.ts`
+- Added `firestore.rules` — auth-gated reads, server-only writes
+- Added `firestore.indexes.json` — composite indexes for filter + sort
+
+**Next step:** Deploy rules in Firebase Console, then Phase 2 (authentication).
+
+### Session 5 — Phase 2 authentication (June 25, 2026)
+
+**What we did:**
+- Auth API routes: `/api/auth/register`, `/api/auth/session`, `/api/auth/logout`
+- `AuthProvider` context, login/signup pages, dashboard shell
+- Middleware + session cookies for route protection
+- First registered user → `admin` custom claim; others → `viewer`
+
+**Next step:** Phase 3 — product repository, service, and API routes.
+
+### Session 6 — Phase 3 product API (June 25, 2026)
+
+**What we did:**
+- `ProductRepository`, `ProductService`, Zod validation
+- API: `GET/POST /api/products`, `GET/PATCH/DELETE /api/products/[id]`, `GET /api/products/summary`
+- Admin-only mutations; viewers can read
+
+**Next step:** Study Phase 3, then Phase 4 dashboard UI.
 
 ---
 

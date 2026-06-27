@@ -32,6 +32,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # local assessment materials (confidential — do not publish)
 2026 06 June fullstack_take_home_challenge.pdf
