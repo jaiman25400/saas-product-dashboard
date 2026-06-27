@@ -9,7 +9,8 @@
 
 ## Table of Contents
 
-0. [Phase 1 & 2 Revision Sheet](./PHASE_1_2_REVISION.md) — interview quick recap
+0. [Phase 1 & 2 Revision Sheet](./PHASE_1_2_REVISION.md) — auth quick recap
+0. [Phase 3 Revision Sheet](./PHASE_3_REVISION.md) — product API quick recap
 1. [Assessment Overview](#assessment-overview)
 2. [Core Requirements](#core-requirements)
 3. [Bonus Areas (TBD)](#bonus-areas-tbd)
@@ -83,19 +84,19 @@ Build a **mini SaaS product management dashboard** where authenticated users can
 
 ---
 
-## Bonus Areas (TBD)
+## Bonus Areas
 
-Pick **one or two** — do not attempt all. Decision deferred until core is stable.
+Pick **one or two** — do not attempt all.
 
-| Bonus | Notes |
-|-------|-------|
-| **Role-based UI + server enforcement** | Admin: edit/delete; Viewer: read-only. Enforce on server, not just hide UI. *Strong recommendation.* |
-| **Search & pagination** | Server or client pagination; cursor-based Firestore pagination is a plus |
-| **CI/CD or deployment** | Vercel, Firebase Hosting, or Azure; GitHub Actions for lint/test |
-| **AI-powered feature** | e.g. auto-generate descriptions, category suggestions, NL search filter |
-| **Observability** | Structured logging, Sentry, Firebase Performance, etc. |
+| Bonus | Status | Notes |
+|-------|--------|-------|
+| **Role-based UI + server enforcement** | ✅ Complete (core) | Admin/viewer UI + `requireAdmin()` + service + Firestore rules |
+| **CI/CD or deployment** | 🔄 In progress | `.github/workflows/ci.yml` + Vercel deploy (see `PHASE_5_CI_CD_STUDY.md`) |
+| **Search & pagination** | ⬜ Not started | Optional second bonus |
+| **AI-powered feature** | ⬜ Not started | Not planned unless chosen later |
+| **Observability** | ⬜ Not started | Optional second bonus |
 
-**Current status:** Not chosen yet — revisit after Phase 4 (Dashboard UI).
+**Chosen bonuses:** (1) CI/CD + Vercel deployment, (2) TBD — search/pagination or observability.
 
 ---
 
@@ -351,20 +352,26 @@ FIREBASE_ADMIN_PRIVATE_KEY=
 - [x] Zod schemas for request bodies
 - [x] Server-side role check on all mutations (`requireAdmin`)
 
-### Phase 4 — Dashboard UI ⬜ Not started
+### Phase 4 — Dashboard UI ✅ Complete
 
-- [ ] Dashboard layout (responsive)
-- [ ] Summary metric cards (≥2)
-- [ ] Product table with filter + sort
-- [ ] Admin: create / edit / delete UI
-- [ ] Viewer: read-only UI
+- [x] Dashboard layout (responsive)
+- [x] Summary metric cards (total, active, revenue)
+- [x] Product table with filter + sort
+- [x] Admin: create / edit / delete UI (modal + confirm delete)
+- [x] Viewer: read-only UI (no action column, no Add button)
+- [x] `apiFetch` client + `lib/api/products.ts` wrappers
 
-### Phase 5 — Polish & bonus ⬜ Not started
+### Phase 5 — Polish & bonus 🔄 In progress
 
-- [ ] Choose 1–2 bonus areas
-- [ ] Deploy (Vercel recommended for Next.js)
-- [ ] GitHub Actions CI (if chosen)
-- [ ] Final README (all required sections)
+- [x] Choose bonus: CI/CD + deployment (primary)
+- [x] GitHub Actions: lint + unit tests + smoke tests + build (`.github/workflows/ci.yml`)
+- [x] Vitest: validation, error mapping, health probes, API auth guards
+- [x] `GET /api/health` liveness endpoint
+- [x] `.env.example` for CI/Vercel contract
+- [ ] **You:** Add GitHub repository secrets (9 Firebase vars)
+- [ ] **You:** Connect repo to Vercel + add env vars
+- [ ] **You:** Add Vercel domain to Firebase authorized domains
+- [ ] Final README (submission)
 
 ### Phase 6 — Interview prep ⬜ Not started
 
@@ -426,8 +433,8 @@ Be ready to explain:
 | Phase 0 — Foundation | ✅ Complete | Firebase SDK wired; add `.env.local` locally |
 | Phase 1 — Database design | ✅ Complete | Deploy `firestore.rules` in Firebase Console |
 | Phase 2 — Authentication | ✅ Complete | Test sign-up → first user is admin |
-| Phase 3 — Data layer + API | ✅ Complete | Study + Phase 4 UI next |
-| Phase 4 — Dashboard UI | ⬜ Not started | — |
+| Phase 3 — Data layer + API | ✅ Complete | Studied |
+| Phase 4 — Dashboard UI | ✅ Complete | Study Phase 4, then Phase 5 |
 | Phase 5 — Polish & bonus | ⬜ Not started | — |
 | Phase 6 — Interview prep | ⬜ Not started | — |
 
@@ -494,7 +501,7 @@ Be ready to explain:
 - API: `GET/POST /api/products`, `GET/PATCH/DELETE /api/products/[id]`, `GET /api/products/summary`
 - Admin-only mutations; viewers can read
 
-**Next step:** Study Phase 3, then Phase 4 dashboard UI.
+**Next step:** Study Phase 4 dashboard UI, then Phase 5 (deploy, README, polish).
 
 ---
 

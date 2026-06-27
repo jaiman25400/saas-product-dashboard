@@ -53,7 +53,7 @@ SIGN IN
   signInWithEmailAndPassword → POST /api/auth/session → cookie → /dashboard
 
 PROTECTED
-  middleware (cookie exists?) → layout getSessionUser() (verify cookie)
+  proxy (cookie exists?) → layout getSessionUser() (verify cookie)
 
 SIGN OUT
   POST /api/auth/logout + Firebase signOut → /login
@@ -85,7 +85,7 @@ SIGN OUT
 |------|------|
 | `lib/auth/constants.ts` | Cookie name + TTL (ms + sec) |
 | `lib/auth/session.ts` | `createSessionCookie`, `verifySessionCookie`, `getSessionUser`, `requireAdmin` |
-| `middleware.ts` | Fast gate — cookie exists? |
+| `proxy.ts` | Fast gate — cookie exists? |
 | `(dashboard)/layout.tsx` | Full verify — `getSessionUser()` |
 | `contexts/auth-provider.tsx` | Client: `signUp`, `signIn`, `onAuthStateChanged` |
 
@@ -108,7 +108,7 @@ Use **`replace`** after login/signup so Back button doesn't return to auth form.
 
 ### Defense in depth
 ```
-middleware     → cookie exists?
+proxy           → cookie exists?
 layout         → cookie cryptographically valid (Firebase Admin)
 API routes     → requireSessionUser / requireAdmin (Phase 3)
 firestore.rules → block direct client writes

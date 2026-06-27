@@ -12,13 +12,15 @@ import type { ProductSummaryResponse } from "@/types/product-api";
 
 export class ProductService {
   async listProducts(
-    _user: SessionUser,
+    user: SessionUser,
     query: ListProductsQuery,
   ): Promise<Product[]> {
+    void user;
     return productRepository.findAll(query);
   }
 
-  async getProduct(_user: SessionUser, id: string): Promise<Product> {
+  async getProduct(user: SessionUser, id: string): Promise<Product> {
+    void user;
     const product = await productRepository.findById(id);
 
     if (!product) {
@@ -63,7 +65,8 @@ export class ProductService {
     await productRepository.delete(id);
   }
 
-  async getSummary(_user: SessionUser): Promise<ProductSummaryResponse> {
+  async getSummary(user: SessionUser): Promise<ProductSummaryResponse> {
+    void user;
     return productRepository.getSummary();
   }
 }

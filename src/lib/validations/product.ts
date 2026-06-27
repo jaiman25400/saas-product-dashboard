@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod"; // Zod is a schema validation library for TypeScript that allows you to define schemas for your data. It is used to validate the data that is sent to the server.
 
 import { PRODUCT_STATUSES } from "@/types/product";
 
