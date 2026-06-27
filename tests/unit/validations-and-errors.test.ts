@@ -59,6 +59,7 @@ describe("listProductsQuerySchema", () => {
     expect(result).toEqual({
       sortBy: "createdAt",
       sortOrder: "desc",
+      limit: 10,
     });
   });
 
@@ -77,6 +78,26 @@ describe("listProductsQuerySchema", () => {
   it("rejects invalid status (negative)", () => {
     const result = listProductsQuerySchema.safeParse({
       status: "archived",
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts search and pagination params (positive)", () => {
+    const result = listProductsQuerySchema.parse({
+      search: "mouse",
+      limit: "20",
+      cursor: "abc",
+    });
+
+    expect(result.search).toBe("mouse");
+    expect(result.limit).toBe(20);
+    expect(result.cursor).toBe("abc");
+  });
+
+  it("rejects limit above max (negative)", () => {
+    const result = listProductsQuerySchema.safeParse({
+      limit: 100,
     });
 
     expect(result.success).toBe(false);
@@ -104,5 +125,11 @@ describe("apiErrorResponse", () => {
     const response = apiErrorResponse(new Error("Product not found"));
 
     expect(response.status).toBe(404);
+  });
+
+  it("maps Invalid cursor to 400 (negative path)", async () => {
+    const response = apiErrorResponse(new Error("Invalid cursor"));
+
+    expect(response.status).toBe(400);
   });
 });

@@ -91,8 +91,8 @@ Pick **one or two** — do not attempt all.
 | Bonus | Status | Notes |
 |-------|--------|-------|
 | **Role-based UI + server enforcement** | ✅ Complete (core) | Admin/viewer UI + `requireAdmin()` + service + Firestore rules |
-| **CI/CD or deployment** | 🔄 In progress | `.github/workflows/ci.yml` + Vercel deploy (see `PHASE_5_CI_CD_STUDY.md`) |
-| **Search & pagination** | ⬜ Not started | Optional second bonus |
+| **CI/CD or deployment** | ✅ Complete | See `BONUS_CI_CD_DEPLOYMENT.md` |
+| **Search & pagination** | ✅ Complete | Firestore cursor + server search — `BONUS_SEARCH_PAGINATION.md` |
 | **AI-powered feature** | ⬜ Not started | Not planned unless chosen later |
 | **Observability** | ⬜ Not started | Optional second bonus |
 

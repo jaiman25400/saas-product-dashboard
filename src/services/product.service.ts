@@ -8,7 +8,10 @@ import type {
 } from "@/lib/validations/product";
 import { productRepository } from "@/repositories/product.repository";
 import type { Product } from "@/types/product";
-import type { ProductSummaryResponse } from "@/types/product-api";
+import type {
+  ProductListResponse,
+  ProductSummaryResponse,
+} from "@/types/product-api";
 
 export class ProductService {
   async listProducts(
@@ -16,7 +19,28 @@ export class ProductService {
     query: ListProductsQuery,
   ): Promise<Product[]> {
     void user;
-    return productRepository.findAll(query);
+    const page = await productRepository.findPage(query);
+    return page.products;
+  }
+
+  async listProductsPage(
+    user: SessionUser,
+    query: ListProductsQuery,
+  ): Promise<{
+    products: Product[];
+    pagination: ProductListResponse["pagination"];
+  }> {
+    void user;
+    const page = await productRepository.findPage(query);
+
+    return {
+      products: page.products,
+      pagination: {
+        limit: query.limit,
+        nextCursor: page.nextCursor,
+        hasMore: page.hasMore,
+      },
+    };
   }
 
   async getProduct(user: SessionUser, id: string): Promise<Product> {

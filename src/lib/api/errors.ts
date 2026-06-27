@@ -20,6 +20,8 @@ export function apiErrorResponse(error: unknown): NextResponse {
         return NextResponse.json({ error: error.message }, { status: 403 });
       case "Product not found":
         return NextResponse.json({ error: error.message }, { status: 404 });
+      case "Invalid cursor":
+        return NextResponse.json({ error: error.message }, { status: 400 });
       default:
         return NextResponse.json(
           { error: error.message || "Internal server error" },

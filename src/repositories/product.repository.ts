@@ -1,12 +1,17 @@
 import "server-only";
 
 import {
+  FieldPath,
   FieldValue,
   type Timestamp,
   type Query,
 } from "firebase-admin/firestore";
 
 import { getAdminDb } from "@/lib/firebase/admin";
+import {
+  decodeProductCursor,
+  encodeProductCursor,
+} from "@/lib/pagination/cursor";
 import { COLLECTIONS } from "@/lib/firestore/collections";
 import type {
   CreateProductInput,
@@ -15,6 +20,15 @@ import type {
 } from "@/lib/validations/product";
 import type { Product, ProductDocument } from "@/types/product";
 import type { ProductSummaryResponse } from "@/types/product-api";
+
+export type ProductPageResult = {
+  products: Product[];
+  nextCursor: string | null;
+  hasMore: boolean;
+};
+
+const SEARCH_BATCH_MULTIPLIER = 3;
+const MAX_SEARCH_BATCHES = 5;
 
 function mapDocToProduct(
   id: string,
@@ -31,6 +45,19 @@ function mapDocToProduct(
     createdBy: data.createdBy,
     organizationId: data.organizationId,
   };
+}
+
+function matchesSearch(product: Product, search?: string): boolean {
+  if (!search) {
+    return true;
+  }
+
+  const term = search.toLowerCase();
+
+  return (
+    product.name.toLowerCase().includes(term) ||
+    product.category.toLowerCase().includes(term)
+  );
 }
 
 function compareProducts(
@@ -55,6 +82,45 @@ function compareProducts(
 export class ProductRepository {
   private collection() {
     return getAdminDb().collection(COLLECTIONS.products);
+  }
+
+  private buildOrderedQuery(query: ListProductsQuery): {
+    firestoreQuery: Query;
+    sortHandledByFirestore: boolean;
+    categoryFilterInMemory: boolean;
+  } {
+    const { status, category, sortBy, sortOrder } = query;
+
+    let firestoreQuery: Query = this.collection();
+    let sortHandledByFirestore = false;
+    let categoryFilterInMemory = false;
+
+    if (status && sortBy === "createdAt") {
+      firestoreQuery = firestoreQuery
+        .where("status", "==", status)
+        .orderBy("createdAt", sortOrder)
+        .orderBy(FieldPath.documentId(), sortOrder);
+      sortHandledByFirestore = true;
+      categoryFilterInMemory = Boolean(category);
+    } else if (category && sortBy === "createdAt") {
+      firestoreQuery = firestoreQuery
+        .where("category", "==", category)
+        .orderBy("createdAt", sortOrder)
+        .orderBy(FieldPath.documentId(), sortOrder);
+      sortHandledByFirestore = true;
+    } else if (status) {
+      firestoreQuery = firestoreQuery.where("status", "==", status);
+      categoryFilterInMemory = Boolean(category);
+    } else if (category) {
+      firestoreQuery = firestoreQuery.where("category", "==", category);
+    } else {
+      firestoreQuery = firestoreQuery
+        .orderBy(sortBy, sortOrder)
+        .orderBy(FieldPath.documentId(), sortOrder);
+      sortHandledByFirestore = true;
+    }
+
+    return { firestoreQuery, sortHandledByFirestore, categoryFilterInMemory };
   }
 
   async create(
@@ -91,47 +157,103 @@ export class ProductRepository {
     return mapDocToProduct(snapshot.id, snapshot.data()!);
   }
 
-  async findAll(query: ListProductsQuery): Promise<Product[]> {
-    const { status, category, sortBy, sortOrder } = query;
+  async findPage(query: ListProductsQuery): Promise<ProductPageResult> {
+    const { category, sortBy, sortOrder, search, limit, cursor } = query;
 
-    let firestoreQuery: Query = this.collection();
-    let sortHandledByFirestore = false;
+    const { firestoreQuery, sortHandledByFirestore, categoryFilterInMemory } =
+      this.buildOrderedQuery(query);
 
-    if (status && sortBy === "createdAt") {
-      firestoreQuery = firestoreQuery
-        .where("status", "==", status)
-        .orderBy("createdAt", sortOrder);
-      sortHandledByFirestore = true;
-    } else if (category && sortBy === "createdAt") {
-      firestoreQuery = firestoreQuery
-        .where("category", "==", category)
-        .orderBy("createdAt", sortOrder);
-      sortHandledByFirestore = true;
-    } else if (status) {
-      firestoreQuery = firestoreQuery.where("status", "==", status);
-    } else if (category) {
-      firestoreQuery = firestoreQuery.where("category", "==", category);
-    } else {
-      firestoreQuery = firestoreQuery.orderBy(sortBy, sortOrder);
-      sortHandledByFirestore = true;
-    }
+    const pageLimit = limit;
+    const collected: Product[] = [];
+    let currentCursor = cursor;
+    let firestoreHasMore = true;
+    let batchesRead = 0;
 
-    const snapshot = await firestoreQuery.get();
-    let products = snapshot.docs.map((doc) =>
-      mapDocToProduct(doc.id, doc.data()),
-    );
+    while (
+      collected.length < pageLimit &&
+      firestoreHasMore &&
+      batchesRead < (search ? MAX_SEARCH_BATCHES : 1)
+    ) {
+      batchesRead += 1;
 
-    if (status && category) {
-      products = products.filter((product) => product.category === category);
-    }
+      let batchQuery: Query = firestoreQuery;
 
-    if (!sortHandledByFirestore) {
-      products = [...products].sort((a, b) =>
-        compareProducts(a, b, sortBy, sortOrder),
+      if (currentCursor) {
+        const cursorDoc = await this.collection()
+          .doc(decodeProductCursor(currentCursor))
+          .get();
+
+        if (cursorDoc.exists) {
+          batchQuery = batchQuery.startAfter(cursorDoc);
+        }
+      }
+
+      const batchSize = search
+        ? pageLimit * SEARCH_BATCH_MULTIPLIER
+        : pageLimit + 1;
+
+      const snapshot = await batchQuery.limit(batchSize).get();
+      firestoreHasMore = snapshot.size === batchSize;
+
+      let products = snapshot.docs.map((doc) =>
+        mapDocToProduct(doc.id, doc.data()),
       );
+
+      if (categoryFilterInMemory && category) {
+        products = products.filter((product) => product.category === category);
+      }
+
+      if (!sortHandledByFirestore) {
+        products = [...products].sort((a, b) =>
+          compareProducts(a, b, sortBy, sortOrder),
+        );
+      }
+
+      products = products.filter((product) => matchesSearch(product, search));
+
+      for (const product of products) {
+        if (collected.length >= pageLimit) {
+          break;
+        }
+
+        collected.push(product);
+      }
+
+      if (!search) {
+        const hasMore = snapshot.size > pageLimit;
+        const pageProducts = hasMore
+          ? collected.slice(0, pageLimit)
+          : collected;
+
+        return {
+          products: pageProducts,
+          nextCursor:
+            hasMore && pageProducts.length > 0
+              ? encodeProductCursor(pageProducts[pageProducts.length - 1]!.id)
+              : null,
+          hasMore,
+        };
+      }
+
+      if (snapshot.docs.length > 0) {
+        currentCursor = encodeProductCursor(
+          snapshot.docs[snapshot.docs.length - 1]!.id,
+        );
+      } else {
+        firestoreHasMore = false;
+      }
     }
 
-    return products;
+    const hasMore = firestoreHasMore && collected.length >= pageLimit;
+
+    return {
+      products: collected,
+      nextCursor:
+        hasMore && collected.length > 0
+          ? encodeProductCursor(collected[collected.length - 1]!.id)
+          : null,
+      hasMore,
+    };
   }
 
   async update(id: string, input: UpdateProductInput): Promise<Product> {

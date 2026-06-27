@@ -14,10 +14,11 @@ export async function GET(request: NextRequest) {
     const user = await requireSessionUser();
     const params = Object.fromEntries(request.nextUrl.searchParams.entries());
     const query = listProductsQuerySchema.parse(params);
-    const products = await productService.listProducts(user, query);
+    const result = await productService.listProductsPage(user, query);
 
     return NextResponse.json({
-      products: products.map(toProductResponse),
+      products: result.products.map(toProductResponse),
+      pagination: result.pagination,
     });
   } catch (error) {
     return apiErrorResponse(error);

@@ -18,6 +18,17 @@ export type ProductSummaryResponse = {
   revenueTotal: number;
 };
 
+export type ProductPaginationResponse = {
+  limit: number;
+  nextCursor: string | null;
+  hasMore: boolean;
+};
+
+export type ProductListResponse = {
+  products: ProductResponse[];
+  pagination: ProductPaginationResponse;
+};
+
 export function toProductResponse(product: Product): ProductResponse {
   return {
     id: product.id,

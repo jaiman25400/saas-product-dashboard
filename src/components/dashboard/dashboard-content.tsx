@@ -5,23 +5,29 @@ import { useEffect, useState } from "react";
 import { MetricCards } from "@/components/dashboard/metric-cards";
 import { ProductFilters } from "@/components/dashboard/product-filters";
 import { ProductFormModal } from "@/components/dashboard/product-form-modal";
+import { ProductPagination } from "@/components/dashboard/product-pagination";
 import { ProductTable } from "@/components/dashboard/product-table";
 import { useAuth } from "@/contexts/auth-provider";
 import {
   createProduct,
   deleteProduct,
-  fetchProducts,
+  fetchProductsPage,
   fetchProductSummary,
   updateProduct,
 } from "@/lib/api/products";
 import type { ListProductsQuery } from "@/lib/validations/product";
-import type { ProductResponse, ProductSummaryResponse } from "@/types/product-api";
+import type {
+  ProductPaginationResponse,
+  ProductResponse,
+  ProductSummaryResponse,
+} from "@/types/product-api";
 import type { CreateProductInput } from "@/lib/validations/product";
 import type { Role } from "@/types/role";
 
 const defaultFilters: ListProductsQuery = {
   sortBy: "createdAt",
   sortOrder: "desc",
+  limit: 10,
 };
 
 type DashboardContentProps = {
@@ -35,7 +41,14 @@ export function DashboardContent({ serverRole }: DashboardContentProps) {
 
   const [summary, setSummary] = useState<ProductSummaryResponse | null>(null);
   const [products, setProducts] = useState<ProductResponse[]>([]);
+  const [pagination, setPagination] = useState<ProductPaginationResponse>({
+    limit: defaultFilters.limit,
+    nextCursor: null,
+    hasMore: false,
+  });
   const [filters, setFilters] = useState<ListProductsQuery>(defaultFilters);
+  const [cursor, setCursor] = useState<string | undefined>();
+  const [cursorHistory, setCursorHistory] = useState<string[]>([]);
   const [loadingSummary, setLoadingSummary] = useState(true);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -73,10 +86,11 @@ export function DashboardContent({ serverRole }: DashboardContentProps) {
   useEffect(() => {
     let cancelled = false;
 
-    void fetchProducts(filters)
+    void fetchProductsPage({ ...filters, cursor })
       .then((data) => {
         if (!cancelled) {
-          setProducts(data);
+          setProducts(data.products);
+          setPagination(data.pagination);
           setError(null);
         }
       })
@@ -94,11 +108,35 @@ export function DashboardContent({ serverRole }: DashboardContentProps) {
     return () => {
       cancelled = true;
     };
-  }, [filters]);
+  }, [filters, cursor]);
+
+  function resetPagination() {
+    setCursor(undefined);
+    setCursorHistory([]);
+  }
 
   function handleFiltersChange(newFilters: ListProductsQuery) {
     setLoadingProducts(true);
+    resetPagination();
     setFilters(newFilters);
+  }
+
+  function handleNextPage() {
+    if (!pagination.nextCursor) return;
+
+    setLoadingProducts(true);
+    setCursorHistory((history) => [...history, cursor ?? ""]);
+    setCursor(pagination.nextCursor);
+  }
+
+  function handlePreviousPage() {
+    if (cursorHistory.length === 0) return;
+
+    setLoadingProducts(true);
+    const history = [...cursorHistory];
+    const previousCursor = history.pop() ?? "";
+    setCursorHistory(history);
+    setCursor(previousCursor || undefined);
   }
 
   async function refreshAll() {
@@ -108,10 +146,11 @@ export function DashboardContent({ serverRole }: DashboardContentProps) {
     try {
       const [summaryData, productsData] = await Promise.all([
         fetchProductSummary(),
-        fetchProducts(filters),
+        fetchProductsPage({ ...filters, cursor }),
       ]);
       setSummary(summaryData);
-      setProducts(productsData);
+      setProducts(productsData.products);
+      setPagination(productsData.pagination);
       setError(null);
     } catch (err) {
       setError(
@@ -143,6 +182,7 @@ export function DashboardContent({ serverRole }: DashboardContentProps) {
       } else if (selectedProduct) {
         await updateProduct(selectedProduct.id, input);
       }
+      resetPagination();
       await refreshAll();
     } finally {
       setSubmitting(false);
@@ -203,6 +243,15 @@ export function DashboardContent({ serverRole }: DashboardContentProps) {
         isAdmin={isAdmin}
         onEdit={openEditModal}
         onDelete={handleDelete}
+      />
+
+      <ProductPagination
+        count={products.length}
+        hasMore={pagination.hasMore}
+        hasPrevious={cursorHistory.length > 0}
+        loading={loadingProducts}
+        onNext={handleNextPage}
+        onPrevious={handlePreviousPage}
       />
 
       {modalOpen ? (
