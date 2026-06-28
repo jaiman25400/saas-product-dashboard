@@ -3,7 +3,7 @@
 A mini SaaS product management dashboard. Authenticated users can view analytics, browse products with search and pagination, and depending on role manage the product catalog.
 
 **Repository:** [github.com/jaiman25400/saas-product-dashboard](https://github.com/jaiman25400/saas-product-dashboard)  
-**Live demo:** _https://saas-product-dashboard-9ehlyjt1u-jaiman25400s-projects.vercel.app/_
+**Live demo:** _https://saas-product-dashboard-1ironc8wk-jaiman25400s-projects.vercel.app/_
 
 ---
 
@@ -280,7 +280,7 @@ Vercel alone does not configure GitHub Actions. If CI build fails with "missing 
 
 _For reviewers:_
 
-- **Live URL:** _https://saas-product-dashboard-9ehlyjt1u-jaiman25400s-projects.vercel.app/_
+- **Live URL:** _https://saas-product-dashboard-1ironc8wk-jaiman25400s-projects.vercel.app/_
 - **How to test admin:** Sign up as the first user in the Firebase project, or use a demo Admin account created:
   - Email: _jaimanjoshi25@gmail.com_
   - Password: _Josman@123_
