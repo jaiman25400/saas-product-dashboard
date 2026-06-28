@@ -3,10 +3,17 @@ import type { ListProductsQuery } from "@/lib/validations/product";
 
 type ProductFiltersProps = {
   filters: ListProductsQuery;
+  categories: string[];
+  categoriesLoading: boolean;
   onChange: (filters: ListProductsQuery) => void;
 };
 
-export function ProductFilters({ filters, onChange }: ProductFiltersProps) {
+export function ProductFilters({
+  filters,
+  categories,
+  categoriesLoading,
+  onChange,
+}: ProductFiltersProps) {
   return (
     <div className="space-y-4 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
       <label className="block space-y-1.5">
@@ -52,8 +59,7 @@ export function ProductFilters({ filters, onChange }: ProductFiltersProps) {
 
         <label className="space-y-1.5">
           <span className="text-sm font-medium text-zinc-700">Category</span>
-          <input
-            type="text"
+          <select
             value={filters.category ?? ""}
             onChange={(event) =>
               onChange({
@@ -61,9 +67,16 @@ export function ProductFilters({ filters, onChange }: ProductFiltersProps) {
                 category: event.target.value || undefined,
               })
             }
-            placeholder="e.g. Electronics"
-            className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900"
-          />
+            disabled={categoriesLoading}
+            className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 disabled:bg-zinc-50"
+          >
+            <option value="">All categories</option>
+            {categories.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
         </label>
 
         <label className="space-y-1.5">

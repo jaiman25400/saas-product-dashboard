@@ -93,6 +93,11 @@ export class ProductService {
     void user;
     return productRepository.getSummary();
   }
+
+  async getCategories(user: SessionUser): Promise<string[]> {
+    void user;
+    return productRepository.getCategories();
+  }
 }
 
 export const productService = new ProductService();

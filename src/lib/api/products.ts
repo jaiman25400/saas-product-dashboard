@@ -29,6 +29,14 @@ export async function fetchProductSummary(): Promise<ProductSummaryResponse> {
   return apiFetch<ProductSummaryResponse>("/api/products/summary");
 }
 
+export async function fetchCategories(): Promise<string[]> {
+  const data = await apiFetch<{ categories: string[] }>(
+    "/api/products/categories",
+  );
+
+  return data.categories;
+}
+
 export async function fetchProductsPage(
   query: ListProductsQuery,
 ): Promise<ProductListResponse> {

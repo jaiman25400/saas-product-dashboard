@@ -304,6 +304,21 @@ export class ProductRepository {
       revenueTotal,
     };
   }
+
+  async getCategories(): Promise<string[]> {
+    const snapshot = await this.collection().select("category").get();
+    const categories = new Set<string>();
+
+    snapshot.docs.forEach((doc) => {
+      const category = doc.get("category");
+
+      if (typeof category === "string" && category.trim()) {
+        categories.add(category);
+      }
+    });
+
+    return [...categories].sort((a, b) => a.localeCompare(b));
+  }
 }
 
 export const productRepository = new ProductRepository();

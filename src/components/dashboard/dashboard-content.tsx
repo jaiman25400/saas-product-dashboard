@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/auth-provider";
 import {
   createProduct,
   deleteProduct,
+  fetchCategories,
   fetchProductsPage,
   fetchProductSummary,
   updateProduct,
@@ -47,6 +48,8 @@ export function DashboardContent({ serverRole }: DashboardContentProps) {
     hasMore: false,
   });
   const [filters, setFilters] = useState<ListProductsQuery>(defaultFilters);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
   const [cursor, setCursor] = useState<string | undefined>();
   const [cursorHistory, setCursorHistory] = useState<string[]>([]);
   const [loadingSummary, setLoadingSummary] = useState(true);
@@ -76,6 +79,29 @@ export function DashboardContent({ serverRole }: DashboardContentProps) {
       })
       .finally(() => {
         if (!cancelled) setLoadingSummary(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    void fetchCategories()
+      .then((data) => {
+        if (!cancelled) setCategories(data);
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setError(
+            err instanceof Error ? err.message : "Failed to load categories",
+          );
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingCategories(false);
       });
 
     return () => {
@@ -144,13 +170,15 @@ export function DashboardContent({ serverRole }: DashboardContentProps) {
     setLoadingProducts(true);
 
     try {
-      const [summaryData, productsData] = await Promise.all([
+      const [summaryData, productsData, categoriesData] = await Promise.all([
         fetchProductSummary(),
         fetchProductsPage({ ...filters, cursor }),
+        fetchCategories(),
       ]);
       setSummary(summaryData);
       setProducts(productsData.products);
       setPagination(productsData.pagination);
+      setCategories(categoriesData);
       setError(null);
     } catch (err) {
       setError(
@@ -235,7 +263,12 @@ export function DashboardContent({ serverRole }: DashboardContentProps) {
 
       <MetricCards summary={summary} loading={loadingSummary} />
 
-      <ProductFilters filters={filters} onChange={handleFiltersChange} />
+      <ProductFilters
+        filters={filters}
+        categories={categories}
+        categoriesLoading={loadingCategories}
+        onChange={handleFiltersChange}
+      />
 
       <ProductTable
         products={products}
