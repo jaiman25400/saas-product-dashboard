@@ -2,6 +2,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import { NextRequest, NextResponse } from "next/server";
 
 import { verifyBearerToken } from "@/lib/auth/session";
+import { USER_ERRORS } from "@/lib/errors/user-messages";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
 import { COLLECTIONS } from "@/lib/firestore/collections";
 import type { Role } from "@/types/role";
@@ -34,10 +35,10 @@ export async function POST(request: NextRequest) {
       );
 
     return NextResponse.json({ ok: true, role });
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Registration failed";
-
-    return NextResponse.json({ error: message }, { status: 400 });
+  } catch {
+    return NextResponse.json(
+      { error: USER_ERRORS.registrationFailed },
+      { status: 400 },
+    );
   }
 }

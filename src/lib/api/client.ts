@@ -1,3 +1,5 @@
+import { USER_ERRORS } from "@/lib/errors/user-messages";
+
 type ApiErrorBody = {
   error?: string;
 };
@@ -27,7 +29,10 @@ export async function apiFetch<T>(
   const data = (await response.json()) as T & ApiErrorBody;
 
   if (!response.ok) {
-    throw new ApiError(data.error ?? "Request failed", response.status);
+    throw new ApiError(
+      data.error ?? USER_ERRORS.requestFailed,
+      response.status,
+    );
   }
 
   return data;

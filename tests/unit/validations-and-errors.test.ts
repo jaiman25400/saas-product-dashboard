@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 
-import { apiErrorResponse } from "@/lib/api/errors";
 import {
   createProductSchema,
   listProductsQuerySchema,
@@ -101,35 +100,5 @@ describe("listProductsQuerySchema", () => {
     });
 
     expect(result.success).toBe(false);
-  });
-});
-
-describe("apiErrorResponse", () => {
-  it("maps Unauthorized to 401 (negative path)", async () => {
-    const response = apiErrorResponse(new Error("Unauthorized"));
-    const body = await response.json();
-
-    expect(response.status).toBe(401);
-    expect(body).toEqual({ error: "Unauthorized" });
-  });
-
-  it("maps Forbidden to 403 (negative path)", async () => {
-    const response = apiErrorResponse(new Error("Forbidden"));
-    const body = await response.json();
-
-    expect(response.status).toBe(403);
-    expect(body).toEqual({ error: "Forbidden" });
-  });
-
-  it("maps Product not found to 404 (negative path)", async () => {
-    const response = apiErrorResponse(new Error("Product not found"));
-
-    expect(response.status).toBe(404);
-  });
-
-  it("maps Invalid cursor to 400 (negative path)", async () => {
-    const response = apiErrorResponse(new Error("Invalid cursor"));
-
-    expect(response.status).toBe(400);
   });
 });

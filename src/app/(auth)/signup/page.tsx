@@ -10,6 +10,7 @@ import {
   AuthShell,
 } from "@/components/auth/auth-shell";
 import { useAuth } from "@/contexts/auth-provider";
+import { getUserErrorMessage, USER_ERRORS } from "@/lib/errors/user-messages";
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -29,7 +30,7 @@ export default function SignUpPage() {
       await signUp(email, password);
       router.replace("/dashboard");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Sign up failed");
+      setError(getUserErrorMessage(err, USER_ERRORS.signUpFailed));
     } finally {
       setSubmitting(false);
     }

@@ -8,6 +8,7 @@ vi.mock("@/lib/auth/session", () => ({
 
 import { GET, POST } from "@/app/api/products/route";
 import { requireAdmin, requireSessionUser } from "@/lib/auth/session";
+import { USER_ERRORS } from "@/lib/errors/user-messages";
 
 describe("products API auth guards", () => {
   beforeEach(() => {
@@ -22,7 +23,7 @@ describe("products API auth guards", () => {
     const body = await response.json();
 
     expect(response.status).toBe(401);
-    expect(body.error).toBe("Unauthorized");
+    expect(body.error).toBe(USER_ERRORS.unauthorized);
   });
 
   it("POST returns 403 when user is not admin (negative)", async () => {
@@ -42,6 +43,6 @@ describe("products API auth guards", () => {
     const body = await response.json();
 
     expect(response.status).toBe(403);
-    expect(body.error).toBe("Forbidden");
+    expect(body.error).toBe(USER_ERRORS.forbidden);
   });
 });

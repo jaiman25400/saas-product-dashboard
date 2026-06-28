@@ -10,6 +10,7 @@ import {
   AuthShell,
 } from "@/components/auth/auth-shell";
 import { useAuth } from "@/contexts/auth-provider";
+import { getUserErrorMessage, USER_ERRORS } from "@/lib/errors/user-messages";
 
 function LoginForm() {
   const router = useRouter();
@@ -31,7 +32,7 @@ function LoginForm() {
       const redirectTo = searchParams.get("from") ?? "/dashboard";
       router.replace(redirectTo);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Sign in failed");
+      setError(getUserErrorMessage(err, USER_ERRORS.signInFailed));
     } finally {
       setSubmitting(false);
     }

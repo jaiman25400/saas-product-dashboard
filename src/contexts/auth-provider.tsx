@@ -18,6 +18,8 @@ import {
 } from "react";
 
 import { getFirebaseAuth } from "@/lib/firebase/client";
+import { getAuthErrorMessage } from "@/lib/auth/errors";
+import { USER_ERRORS } from "@/lib/errors/user-messages";
 import type { Role } from "@/types/role";
 
 type AuthContextValue = {
@@ -41,7 +43,12 @@ async function establishServerSession(idToken: string): Promise<void> {
 
   if (!response.ok) {
     const data = (await response.json()) as { error?: string };
-    throw new Error(data.error ?? "Failed to create session");
+    throw new Error(
+      getAuthErrorMessage(
+        new Error(data.error ?? USER_ERRORS.sessionFailed),
+        USER_ERRORS.sessionFailed,
+      ),
+    );
   }
 }
 
@@ -56,7 +63,12 @@ async function registerUserProfile(idToken: string): Promise<Role> {
   const data = (await response.json()) as { role?: Role; error?: string };
 
   if (!response.ok) {
-    throw new Error(data.error ?? "Failed to register user profile");
+    throw new Error(
+      getAuthErrorMessage(
+        new Error(data.error ?? USER_ERRORS.registrationFailed),
+        USER_ERRORS.registrationFailed,
+      ),
+    );
   }
 
   return data.role ?? "viewer";
@@ -93,33 +105,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signUp = useCallback(async (email: string, password: string) => {
-    const auth = getFirebaseAuth();
-    const credential = await createUserWithEmailAndPassword(
-      auth,
-      email,
-      password,
-    );
+    try {
+      const auth = getFirebaseAuth();
+      const credential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password,
+      );
 
-    const idToken = await credential.user.getIdToken();
-    const assignedRole = await registerUserProfile(idToken);
+      const idToken = await credential.user.getIdToken();
+      const assignedRole = await registerUserProfile(idToken);
 
-    // Force refresh so custom claims are available on the client token
-    await credential.user.getIdToken(true);
-    const refreshedRole = await readRoleFromToken(credential.user);
+      // Force refresh so custom claims are available on the client token
+      await credential.user.getIdToken(true);
+      const refreshedRole = await readRoleFromToken(credential.user);
 
-    await establishServerSession(await credential.user.getIdToken());
-    setRole(refreshedRole ?? assignedRole);
+      await establishServerSession(await credential.user.getIdToken());
+      setRole(refreshedRole ?? assignedRole);
 
-    return assignedRole;
+      return assignedRole;
+    } catch (error) {
+      throw new Error(getAuthErrorMessage(error, USER_ERRORS.signUpFailed));
+    }
   }, []);
 
   const signIn = useCallback(async (email: string, password: string) => {
-    const auth = getFirebaseAuth();
-    const credential = await signInWithEmailAndPassword(auth, email, password);
-    const tokenRole = await readRoleFromToken(credential.user);
+    try {
+      const auth = getFirebaseAuth();
+      const credential = await signInWithEmailAndPassword(auth, email, password);
+      const tokenRole = await readRoleFromToken(credential.user);
 
-    await establishServerSession(await credential.user.getIdToken());
-    setRole(tokenRole);
+      await establishServerSession(await credential.user.getIdToken());
+      setRole(tokenRole);
+    } catch (error) {
+      throw new Error(getAuthErrorMessage(error, USER_ERRORS.signInFailed));
+    }
   }, []);
 
   const signOutUser = useCallback(async () => {

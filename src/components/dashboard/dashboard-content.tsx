@@ -16,6 +16,7 @@ import {
   fetchProductSummary,
   updateProduct,
 } from "@/lib/api/products";
+import { getUserErrorMessage, USER_ERRORS } from "@/lib/errors/user-messages";
 import type { ListProductsQuery } from "@/lib/validations/product";
 import type {
   ProductPaginationResponse,
@@ -72,9 +73,7 @@ export function DashboardContent({ serverRole }: DashboardContentProps) {
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(
-            err instanceof Error ? err.message : "Failed to load summary",
-          );
+          setError(getUserErrorMessage(err, USER_ERRORS.loadSummaryFailed));
         }
       })
       .finally(() => {
@@ -95,9 +94,7 @@ export function DashboardContent({ serverRole }: DashboardContentProps) {
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(
-            err instanceof Error ? err.message : "Failed to load categories",
-          );
+          setError(getUserErrorMessage(err, USER_ERRORS.loadCategoriesFailed));
         }
       })
       .finally(() => {
@@ -122,9 +119,7 @@ export function DashboardContent({ serverRole }: DashboardContentProps) {
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(
-            err instanceof Error ? err.message : "Failed to load products",
-          );
+          setError(getUserErrorMessage(err, USER_ERRORS.loadProductsFailed));
         }
       })
       .finally(() => {
@@ -181,9 +176,7 @@ export function DashboardContent({ serverRole }: DashboardContentProps) {
       setCategories(categoriesData);
       setError(null);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to refresh dashboard",
-      );
+      setError(getUserErrorMessage(err, USER_ERRORS.refreshFailed));
     } finally {
       setLoadingSummary(false);
       setLoadingProducts(false);
@@ -228,7 +221,7 @@ export function DashboardContent({ serverRole }: DashboardContentProps) {
       await deleteProduct(product.id);
       await refreshAll();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete product");
+      setError(getUserErrorMessage(err, USER_ERRORS.deleteProductFailed));
     }
   }
 

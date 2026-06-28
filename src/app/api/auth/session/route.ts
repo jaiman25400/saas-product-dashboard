@@ -8,6 +8,7 @@ import {
   createSessionCookie,
   extractBearerToken,
 } from "@/lib/auth/session";
+import { USER_ERRORS } from "@/lib/errors/user-messages";
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,11 +28,17 @@ export async function POST(request: NextRequest) {
 
     return response;
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Failed to create session";
+    const isAuthHeaderError =
+      error instanceof Error &&
+      error.message.includes("Authorization header");
 
-    const status = message.includes("Authorization header") ? 400 : 401;
-
-    return NextResponse.json({ error: message }, { status });
+    return NextResponse.json(
+      {
+        error: isAuthHeaderError
+          ? USER_ERRORS.unauthorized
+          : USER_ERRORS.sessionFailed,
+      },
+      { status: isAuthHeaderError ? 401 : 500 },
+    );
   }
 }

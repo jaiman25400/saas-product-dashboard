@@ -5,6 +5,7 @@ import { FormEvent, useState } from "react";
 import { PRODUCT_STATUSES } from "@/types/product";
 import type { ProductResponse } from "@/types/product-api";
 import type { CreateProductInput } from "@/lib/validations/product";
+import { getUserErrorMessage, USER_ERRORS } from "@/lib/errors/user-messages";
 
 type ProductFormModalProps = {
   mode: "create" | "edit";
@@ -55,7 +56,7 @@ export function ProductFormModal({
       await onSubmit(form);
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save product");
+      setError(getUserErrorMessage(err, USER_ERRORS.saveProductFailed));
     }
   }
 
