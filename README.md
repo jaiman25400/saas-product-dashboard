@@ -1,9 +1,9 @@
 # SaaS Product Dashboard
 
-A mini SaaS product management dashboard built for a Senior Full Stack Developer take-home assessment. Authenticated users can view analytics, browse products with search and pagination, and—depending on role—manage the product catalog.
+A mini SaaS product management dashboard. Authenticated users can view analytics, browse products with search and pagination, and depending on role manage the product catalog.
 
 **Repository:** [github.com/jaiman25400/saas-product-dashboard](https://github.com/jaiman25400/saas-product-dashboard)  
-**Live demo:** _Add your Vercel URL here after deploy_
+**Live demo:** _https://saas-product-dashboard-hkjk6cmxi-jaiman25400s-projects.vercel.app/_
 
 ---
 
@@ -61,6 +61,10 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000). Sign up with a new account—the **first user becomes admin**; subsequent users are viewers.
+
+### For reviewers (no access to my Firebase credentials)
+
+Reviewers typically evaluate the **live Vercel demo** (see top of this README). To run locally, create your **own** Firebase project and fill `.env.local` from `.env.example`—you cannot use the author's private keys, and that is expected for take-home submissions. Without any `.env.local`, `npm run dev` will fail when Firebase initializes; `npm run test:unit` and `npm run lint` still work without secrets.
 
 ### Scripts
 
