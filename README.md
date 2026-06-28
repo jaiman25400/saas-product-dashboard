@@ -3,7 +3,7 @@
 A mini SaaS product management dashboard. Authenticated users can view analytics, browse products with search and pagination, and depending on role manage the product catalog.
 
 **Repository:** [github.com/jaiman25400/saas-product-dashboard](https://github.com/jaiman25400/saas-product-dashboard)  
-**Live demo:** _https://saas-product-dashboard-hkjk6cmxi-jaiman25400s-projects.vercel.app/_
+**Live demo:** _https://saas-product-dashboard-9ehlyjt1u-jaiman25400s-projects.vercel.app/_
 
 ---
 
