@@ -64,7 +64,7 @@ Open [http://localhost:3000](http://localhost:3000). Sign up with a new account�
 
 ### For reviewers (no access to my Firebase credentials)
 
-Reviewers typically evaluate the **live Vercel demo** (see top of this README). To run locally, create your **own** Firebase project and fill `.env.local` from `.env.example`—you cannot use the author's private keys, and that is expected for take-home submissions. Without any `.env.local`, `npm run dev` will fail when Firebase initializes; `npm run test:unit` and `npm run lint` still work without secrets.
+ To run locally, create your **own** Firebase project and fill `.env.local` from `.env.example`—. Without any `.env.local`, `npm run dev` will fail when Firebase initializes; `npm run test:unit` and `npm run lint` still work without secrets.
 
 ### Scripts
 
@@ -280,10 +280,10 @@ Vercel alone does not configure GitHub Actions. If CI build fails with "missing 
 
 _For reviewers:_
 
-- **Live URL:** _your Vercel URL_
-- **How to test admin:** Sign up as the first user in the Firebase project, or use a demo account you create:
-  - Email: _optional demo email_
-  - Password: _optional demo password_
+- **Live URL:** _https://saas-product-dashboard-9ehlyjt1u-jaiman25400s-projects.vercel.app/_
+- **How to test admin:** Sign up as the first user in the Firebase project, or use a demo Admin account created:
+  - Email: _jaimanjoshi25@gmail.com_
+  - Password: _Josman@123_
 - **Viewer:** Sign up with a second account to see read-only UI.
 
 Before final submission, curate 3–5 sample products with distinct categories so search, filters, and pagination are easy to evaluate.
